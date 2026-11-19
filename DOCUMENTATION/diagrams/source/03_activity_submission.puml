@@ -1,0 +1,24 @@
+@startuml
+skinparam dpi 150
+|Complainant|
+start
+:Open complaint form;
+:Select role and institution\nand describe the problem;
+:Submit complaint;
+|System|
+:Validate and save complaint;
+:Mask personal identifiers\n(NRC, phone numbers);
+|AI Engine|
+:Clean and normalise text;
+:Predict subject, urgency\nand sentiment;
+|System|
+if (Confidence >= threshold?) then (yes)
+  :Accept AI labels;
+else (no)
+  :Flag for officer review;
+endif
+:Generate reference number;
+|Complainant|
+:Receive reference number;
+stop
+@enduml

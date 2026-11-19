@@ -1,0 +1,25 @@
+@startuml
+skinparam dpi 150
+actor Complainant
+participant "Web UI" as UI
+participant "Flask API" as API
+participant "NLP Engine" as NLP
+participant "Routing Service" as R
+database "SQLite DB" as DB
+actor Officer
+Complainant -> UI : Fill in and submit complaint
+UI -> API : POST /submit
+API -> DB : Save complainant and complaint
+API -> NLP : classify(text)
+NLP --> API : subject, urgency, sentiment, confidence
+API -> R : route(subject, urgency)
+R -> DB : Find officer with fewest open cases
+R --> API : officer, due date
+API -> DB : Save prediction and assignment
+API --> UI : Reference number
+UI --> Complainant : Show reference number
+API -> Officer : Notification (new case)
+Officer -> API : Update status or correct labels
+API -> DB : Save update
+API --> Officer : Updated case
+@enduml

@@ -1,0 +1,107 @@
+@startuml
+skinparam dpi 150
+hide circle
+skinparam linetype ortho
+entity institutions {
+  * institution_id : INT <<PK>>
+  --
+  code : TEXT
+  name : TEXT
+}
+entity complainants {
+  * complainant_id : INT <<PK>>
+  --
+  institution_id : INT <<FK>>
+  role : TEXT
+  full_name : TEXT
+  contact : TEXT
+}
+entity complaints {
+  * complaint_id : INT <<PK>>
+  --
+  reference_no : TEXT
+  complainant_id : INT <<FK>>
+  department_id : INT <<FK>>
+  officer_id : INT <<FK>>
+  text : TEXT
+  status : TEXT
+  created_at : DATETIME
+  due_at : DATETIME
+  resolved_at : DATETIME
+  is_escalated : BOOL
+}
+entity predictions {
+  * prediction_id : INT <<PK>>
+  --
+  complaint_id : INT <<FK>>
+  category : TEXT
+  urgency : TEXT
+  sentiment : TEXT
+  confidence : REAL
+  needs_review : BOOL
+  model_version : TEXT
+  corrected_category : TEXT
+  corrected_urgency : TEXT
+  corrected_sentiment : TEXT
+}
+entity departments {
+  * department_id : INT <<PK>>
+  --
+  name : TEXT
+}
+entity officers {
+  * officer_id : INT <<PK>>
+  --
+  department_id : INT <<FK>>
+  username : TEXT
+  full_name : TEXT
+  role : TEXT
+  password_hash : TEXT
+}
+entity case_updates {
+  * update_id : INT <<PK>>
+  --
+  complaint_id : INT <<FK>>
+  officer_id : INT <<FK>>
+  note : TEXT
+  new_status : TEXT
+  created_at : DATETIME
+}
+entity escalations {
+  * escalation_id : INT <<PK>>
+  --
+  complaint_id : INT <<FK>>
+  reason : TEXT
+  created_at : DATETIME
+}
+entity notifications {
+  * notification_id : INT <<PK>>
+  --
+  officer_id : INT <<FK>>
+  complaint_id : INT <<FK>>
+  message : TEXT
+  created_at : DATETIME
+}
+entity routing_rules {
+  * category : TEXT <<PK>>
+  --
+  department_id : INT <<FK>>
+}
+entity sla_rules {
+  * urgency : TEXT <<PK>>
+  --
+  hours_to_resolve : INT
+}
+institutions ||--o{ complainants
+complainants ||--o{ complaints
+complaints ||--o{ predictions
+departments ||--o{ officers
+departments ||--o{ complaints
+officers ||--o{ complaints
+complaints ||--o{ case_updates
+officers ||--o{ case_updates
+complaints ||--o{ escalations
+officers ||--o{ notifications
+complaints ||--o{ notifications
+departments ||--o{ routing_rules
+@enduml

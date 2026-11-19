@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}<h1>Performance reports</h1>
+<div class="kpis"><div class="kpi"><b>{{ k.total }}</b>Complaints</div><div class="kpi"><b>{{ k.open }}</b>Open</div><div class="kpi bad"><b>{{ k.overdue }}</b>Overdue</div><div class="kpi"><b>{{ k.escalated }}</b>Escalations</div>
+<div class="kpi"><b>{{ k.avg_hours if k.avg_hours is not none else '-' }}</b>Avg hours to resolve</div><div class="kpi"><b>{{ (k.within_sla ~ '%') if k.within_sla is not none else '-' }}</b>Resolved within SLA</div>
+<div class="kpi"><b>{{ k.corrections }}</b>AI labels corrected</div><div class="kpi"><b>{{ k.review }}</b>Low-confidence cases</div></div>
+<div class="grid2">{% for title, data in charts.items() %}<div class="card"><h2>{{ title }}</h2>{% set mx = (data|map(attribute=1)|max) if data else 1 %}{% for label, n in data %}<div>{{ label }} <b>({{ n }})</b></div><div class="bar"><i style="width:{{ (n/mx*100)|round(0) }}%"></i></div>{% endfor %}</div>{% endfor %}</div>
+<form method="post" action="{{ url_for('admin_escalate') }}"><button class="alt">Run escalation check now</button></form>{% endblock %}

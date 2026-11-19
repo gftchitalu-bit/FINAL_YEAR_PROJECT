@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+skinparam dpi 150
+skinparam packageStyle rectangle
+actor "Member / Employee" as M
+actor "Employer" as E
+actor "Beneficiary / Survivor" as B
+actor "Complaint Officer" as O
+actor "Supervisor" as S
+actor "Administrator" as A
+rectangle "AI-Based Pension Complaints Analysis and Resolution System" {
+  usecase "Submit complaint" as UC1
+  usecase "Track complaint status" as UC2
+  usecase "Classify subject, urgency\nand sentiment (AI)" as UC3
+  usecase "Route to department\nand officer" as UC4
+  usecase "Update and resolve case" as UC5
+  usecase "Correct AI labels" as UC6
+  usecase "Escalate overdue or\nurgent case" as UC7
+  usecase "View performance reports" as UC8
+  usecase "Manage users, routing\nrules and SLA timers" as UC9
+  usecase "Retrain model" as UC10
+  usecase "Receive notifications" as UC11
+}
+M --> UC1
+E --> UC1
+B --> UC1
+M --> UC2
+E --> UC2
+B --> UC2
+O --> UC5
+O --> UC11
+S --> UC7
+S --> UC8
+S --> UC11
+A --> UC9
+A --> UC10
+UC1 ..> UC3 : <<include>>
+UC3 ..> UC4 : <<include>>
+UC6 ..> UC5 : <<extend>>
+UC7 ..> UC11 : <<include>>
+@enduml

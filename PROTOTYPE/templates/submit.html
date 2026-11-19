@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}<h1>Submit a pension complaint</h1>
+<div class="card"><form method="post">
+<div class="row"><div><label>I am a</label><select name="role"><option value="employee">Employee / member</option><option value="employer">Employer</option><option value="beneficiary">Beneficiary / survivor</option></select></div>
+<div><label>Institution</label><select name="institution"><option>NAPSA</option><option>PSPF</option><option>LASF</option></select></div>
+<div><label>Name (optional)</label><input name="name" value="{{ form.get('name','') }}"></div><div><label>Contact (optional)</label><input name="contact" value="{{ form.get('contact','') }}"></div></div>
+<label>Describe your problem</label><textarea name="text" required placeholder="Example: My employer deducted my pension for 5 months but nothing shows on my NAPSA statement.">{{ form.get('text','') }}</textarea>
+<p class="muted">Personal numbers such as NRC and phone numbers are masked automatically before the complaint is stored.</p><button>Submit complaint</button></form></div>{% endblock %}

@@ -1,0 +1,15 @@
+@startuml
+skinparam dpi 150
+left to right direction
+rectangle "Raw complaint\ntext" as A
+rectangle "Mask identifiers\n(NRC, phone)" as B
+rectangle "Lower-case and\nnormalise" as C
+rectangle "TF-IDF features\n(1-2 word n-grams)" as D
+rectangle "Classifier\n(logistic regression)" as E
+rectangle "Subject\nUrgency\nSentiment\nConfidence" as F
+A --> B
+B --> C
+C --> D
+D --> E
+E --> F
+@enduml

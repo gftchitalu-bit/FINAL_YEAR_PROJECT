@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block content %}<h1>Complaint received</h1><div class="card"><p>Your complaint has been classified, routed to the right team and given a due date.</p>
+<p>Your reference number is <b class="mono" style="font-size:1.4rem">{{ ref }}</b></p><p>Keep it safe. You can follow progress on the tracking page.</p>
+<a class="btn" href="{{ url_for('track', ref=ref) }}">Track this complaint</a></div>{% endblock %}

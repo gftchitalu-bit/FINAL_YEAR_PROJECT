@@ -1,0 +1,25 @@
+@startuml
+skinparam dpi 150
+start
+:Collect or simulate complaints;
+:Label subject, urgency and sentiment;
+:Clean text and mask identifiers;
+:Split into train, validation and test sets\n(stratified);
+:Extract features (TF-IDF);
+fork
+  :Train logistic regression;
+fork again
+  :Train SVM;
+fork again
+  :Fine-tune DistilBERT;
+end fork
+:Evaluate on test set\n(accuracy, precision, recall, F1);
+if (Meets target?) then (yes)
+  :Select and save best model;
+  :Serve model through the API;
+else (no)
+  :Improve data or tune models;
+  :Repeat training;
+endif
+stop
+@enduml

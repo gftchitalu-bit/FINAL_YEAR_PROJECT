@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Pension Complaints{% endblock %} | AI Pension Complaints Prototype</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body>
+<header><span class="brand">AI-Based Pension Complaints System (prototype)</span>
+<a href="{{ url_for('submit') }}">Submit complaint</a><a href="{{ url_for('track') }}">Track complaint</a>
+{% if session.uid %}<a href="{{ url_for('dashboard') }}">Dashboard ({{ notif_count }} alerts)</a>
+{% if session.role in ('supervisor','admin') %}<a href="{{ url_for('reports') }}">Reports</a><a href="{{ url_for('model') }}">AI model</a>{% endif %}
+<a href="{{ url_for('logout') }}">Log out ({{ session.name }})</a>{% else %}<a href="{{ url_for('login') }}">Staff login</a>{% endif %}</header>
+<main>{% with msgs = get_flashed_messages(with_categories=true) %}{% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}{% endwith %}
+{% block content %}{% endblock %}<p class="muted">Prototype for ICT431. Simulated data only. Do not enter real personal information.</p></main></body></html>

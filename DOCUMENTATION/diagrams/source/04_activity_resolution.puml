@@ -1,0 +1,34 @@
+@startuml
+skinparam dpi 150
+|System|
+start
+:Map subject to department;
+:Select officer with fewest open cases;
+:Set due date from urgency SLA;
+:Notify officer;
+|Officer|
+:Open case and review AI labels;
+if (Labels correct?) then (no)
+  :Correct labels;
+  |System|
+  :Store correction for retraining;
+  |Officer|
+else (yes)
+endif
+:Investigate and update status;
+|System|
+if (Past due date and\nnot resolved?) then (yes)
+  :Mark case as Escalated;
+  |Supervisor|
+  :Receive alert, reassign\nor intervene;
+  |Officer|
+  :Continue handling the case;
+else (no)
+endif
+|Officer|
+:Record resolution;
+|System|
+:Notify complainant;
+:Close case and store\nresolution time;
+stop
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+skinparam dpi 150
+skinparam classAttributeIconSize 0
+class Complainant {
+  +role : String
+  +fullName : String
+  +contact : String
+}
+class Complaint {
+  +referenceNo : String
+  +text : String
+  +status : String
+  +createdAt : DateTime
+  +dueAt : DateTime
+  +isEscalated : Boolean
+}
+class Prediction {
+  +category : String
+  +urgency : String
+  +sentiment : String
+  +confidence : Float
+  +modelVersion : String
+}
+class NLPEngine {
+  +clean(text) : String
+  +classify(text) : Prediction
+  +train(dataset) : Metrics
+}
+class RoutingService {
+  +route(prediction) : Officer
+  +dueDate(urgency) : DateTime
+}
+class EscalationService {
+  +checkOverdue() : List
+  +raiseUrgency(complaint)
+}
+class Officer {
+  +username : String
+  +role : String
+  +updateCase(complaint, note, status)
+  +correctLabels(prediction)
+}
+class Department {
+  +name : String
+}
+class ReportService {
+  +volumesByCategory()
+  +averageResolutionTime()
+  +overdueCases()
+}
+Complainant "1" --> "0..*" Complaint : submits
+Complaint "1" --> "1..*" Prediction : has
+NLPEngine ..> Prediction : creates
+RoutingService ..> Complaint : assigns
+RoutingService --> Department : maps to
+Department "1" o-- "0..*" Officer
+Officer "1" --> "0..*" Complaint : handles
+EscalationService ..> Complaint : monitors
+ReportService ..> Complaint : summarises
+@enduml

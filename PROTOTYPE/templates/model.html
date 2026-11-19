@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}<h1>AI model</h1>
+<div class="notice">Version <b>{{ m.meta.version }}</b>, trained {{ m.meta.trained_at }} on {{ m.meta.n_rows }} rows ({{ m.meta.n_corrections }} officer corrections). The training data is <b>simulated and built from templates</b>, so these scores are much higher than real complaints would give. Test on real, anonymised data before drawing conclusions.</div>
+<div class="card"><h2>Held-out test results (20%)</h2><table><tr><th>Target</th><th>Accuracy</th><th>Macro precision</th><th>Macro recall</th><th>Macro F1</th></tr>
+{% for t, v in m.metrics.items() %}<tr><td>{{ t }}</td><td>{{ v.accuracy }}</td><td>{{ v.macro_precision }}</td><td>{{ v.macro_recall }}</td><td>{{ v.macro_f1 }}</td></tr>{% endfor %}</table></div>
+<div class="card" style="overflow-x:auto"><h2>Subject confusion matrix (rows = actual, columns = predicted)</h2><table><tr><th></th>{% for l in m.metrics.category.labels %}<th>{{ loop.index }}</th>{% endfor %}</tr>
+{% for row in m.metrics.category.confusion %}{% set i = loop.index0 %}<tr><th>{{ loop.index }}. {{ CAT[m.metrics.category.labels[i]] }}</th>{% for v in row %}<td style="{{ 'background:#DDF0DD;font-weight:700' if i==loop.index0 and v>0 else ('background:#FDE2E2' if v>0 else '') }}">{{ v }}</td>{% endfor %}</tr>{% endfor %}</table></div>
+{% if session.role == 'admin' %}<form method="post" action="{{ url_for('admin_retrain') }}"><button>Retrain model with officer corrections</button></form>{% endif %}{% endblock %}

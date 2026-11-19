@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block content %}<h1>{{ c.reference_no }} <span class="badge st-{{ c.status }}">{{ c.status }}</span></h1>
+<div class="grid2"><div class="card"><h2>Complaint</h2><p>{{ c.text }}</p><p class="muted">From a {{ c.crole }} ({{ c.inst }}), {{ c.cname }}. Received {{ c.created_at|dt }}. Due {{ c.due_at|dt }}.</p>
+<p><b>Department:</b> {{ c.dept }}<br><b>Officer:</b> {{ c.officer }}</p>
+<h2>AI labels</h2><p>Subject: <b>{{ CAT[c.category] }}</b> ({{ (c.confidence*100)|round(0)|int }}% confidence){% if c.needs_review %} <span class="badge">needs review</span>{% endif %}<br>
+Urgency: <span class="badge {{ c.urgency }}">{{ c.urgency }}</span> &nbsp; Sentiment: <span class="badge {{ c.sentiment }}">{{ c.sentiment }}</span><br><span class="muted">Model {{ c.model_version }}{% if c.corrected_category %}; corrected by officer{% endif %}</span></p></div>
+<div class="card"><h2>Update case</h2><form method="post"><label>Status</label><select name="status">{% for s in STATUSES %}<option {{ 'selected' if c.status==s }}>{{ s }}</option>{% endfor %}</select>
+<label>Note</label><textarea name="note" style="min-height:70px"></textarea><div class="row"><div><label>Subject (correct if wrong)</label><select name="category">{% for k,v in CAT.items() %}<option value="{{ k }}" {{ 'selected' if (c.corrected_category or c.category)==k }}>{{ v }}</option>{% endfor %}</select></div>
+<div><label>Urgency</label><select name="urgency">{% for u in ['low','medium','high'] %}<option {{ 'selected' if (c.corrected_urgency or c.urgency)==u }}>{{ u }}</option>{% endfor %}</select></div>
+<div><label>Sentiment</label><select name="sentiment">{% for u in ['negative','neutral','positive'] %}<option {{ 'selected' if (c.corrected_sentiment or c.sentiment)==u }}>{{ u }}</option>{% endfor %}</select></div></div>
+{% if session.role in ('supervisor','admin') %}<label>Reassign to officer</label><select name="officer_id"><option value="">(no change)</option>{% for o in officers %}<option value="{{ o.officer_id }}">{{ o.full_name }}</option>{% endfor %}</select>{% endif %}
+<br><br><button>Save</button> <a class="btn alt" href="{{ url_for('dashboard') }}">Back</a></form><p class="muted">Corrections are stored and can be used to retrain the model.</p></div></div>
+<div class="card"><h2>History</h2><ul class="timeline">{% for h in hist %}<li><b>{{ h.new_status }}</b> <span class="muted">{{ h.created_at|dt }} by {{ h.full_name or 'System' }}</span><br>{{ h.note }}</li>{% endfor %}</ul></div>{% endblock %}

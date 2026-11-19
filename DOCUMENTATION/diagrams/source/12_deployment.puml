@@ -1,0 +1,14 @@
+@startuml
+skinparam dpi 150
+node "User PC (Windows, macOS or Linux)" {
+  node "Web browser" as BR
+  node "Python 3.10+ runtime" as PY {
+    artifact "app.py (Flask)" as APP
+    artifact "nlp.py + model.joblib" as ML
+    artifact "complaints.db (SQLite)" as DB
+  }
+}
+BR --> APP : HTTP (localhost:5000)
+APP --> ML : classify(text)
+APP --> DB : read / write
+@enduml

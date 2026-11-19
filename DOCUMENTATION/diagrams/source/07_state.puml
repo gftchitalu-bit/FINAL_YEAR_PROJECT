@@ -1,0 +1,16 @@
+@startuml
+skinparam dpi 150
+[*] --> Assigned : AI labels set and case routed
+Assigned --> InProgress : officer opens case
+InProgress --> AwaitingInfo : more information needed
+AwaitingInfo --> InProgress : information received
+Assigned --> Escalated : due date passed
+InProgress --> Escalated : due date passed
+AwaitingInfo --> Escalated : due date passed
+Escalated --> InProgress : supervisor intervenes
+InProgress --> Resolved : resolution recorded
+Resolved --> Closed : complainant notified
+Closed --> [*]
+state InProgress : In Progress
+state AwaitingInfo : Awaiting Info
+@enduml

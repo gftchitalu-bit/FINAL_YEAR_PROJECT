@@ -1,0 +1,35 @@
+@startuml
+skinparam dpi 150
+skinparam componentStyle rectangle
+skinparam linetype ortho
+top to bottom direction
+package "Presentation layer (browser)" {
+  [Complaint form] as F
+  [Tracking page] as T
+  [Officer dashboard] as OD
+  [Supervisor reports] as SR
+}
+package "Application layer (Flask)" {
+  [Intake controller] as IC
+  [Case service] as CS
+  [Routing and escalation service] as RE
+  [Report service] as RS
+  [Authentication] as AU
+}
+package "AI layer (scikit-learn)" {
+  [Text cleaner] as TC
+  [Classifier: subject,\nurgency, sentiment] as CL
+}
+database "SQLite database" as DB
+F -down-> IC
+T -down-> CS
+OD -down-> CS
+SR -down-> RS
+OD -down-> AU
+IC -right-> TC
+TC -down-> CL
+IC -down-> RE
+RE -right-> CS
+CS -down-> DB
+RS -down-> DB
+@enduml

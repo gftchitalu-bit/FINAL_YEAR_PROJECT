@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block content %}<h1>Case dashboard</h1>
+<div class="card"><form method="get" class="row"><div><label>Scope</label><select name="scope"><option value="mine" {{ 'selected' if scope=='mine' }}>My cases</option><option value="all" {{ 'selected' if scope=='all' }}>All cases</option></select></div>
+<div><label>Status</label><select name="status"><option value="">Any</option>{% for s in STATUSES %}<option {{ 'selected' if f.status==s }}>{{ s }}</option>{% endfor %}</select></div>
+<div><label>Urgency</label><select name="urgency"><option value="">Any</option>{% for u in ['high','medium','low'] %}<option {{ 'selected' if f.urgency==u }}>{{ u }}</option>{% endfor %}</select></div>
+<div style="align-self:end"><button>Filter</button></div></form>
+{% if session.role in ('supervisor','admin') %}<form method="post" action="{{ url_for('admin_escalate') }}" style="margin-top:.7rem"><button class="alt">Run escalation check now</button></form>{% endif %}</div>
+{% if notes %}<div class="card"><b>Latest alerts</b><ul>{% for n in notes %}<li>{{ n.message }} <span class="muted">{{ n.created_at|dt }}</span></li>{% endfor %}</ul></div>{% endif %}
+<div class="card" style="overflow-x:auto"><table><tr><th>Reference</th><th>Subject</th><th>Urgency</th><th>Sentiment</th><th>From</th><th>Department / officer</th><th>Status</th><th>Due</th></tr>
+{% for r in rows %}<tr><td><a href="{{ url_for('case', cid=r.complaint_id) }}">{{ r.reference_no }}</a>{% if r.needs_review %} <span class="badge" title="Low AI confidence">review</span>{% endif %}</td><td>{{ CATEGORIES[r.cat] }}</td>
+<td><span class="badge {{ r.urg }}">{{ r.urg }}</span></td><td><span class="badge {{ r.sent }}">{{ r.sent }}</span></td><td>{{ r.crole }} / {{ r.inst }}</td><td>{{ r.dept }}<br><span class="muted">{{ r.officer }}</span></td>
+<td><span class="badge st-{{ r.status }}">{{ r.status }}</span></td><td class="{{ 'overdue' if r.status == 'Escalated' }}">{{ r.due_at|dt }}</td></tr>
+{% else %}<tr><td colspan="8">No cases match.</td></tr>{% endfor %}</table></div>{% endblock %}

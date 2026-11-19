@@ -1,0 +1,18 @@
+digraph G {
+  graph [rankdir=LR, fontname="Helvetica", nodesep=0.7, ranksep=1.4, dpi=150];
+  node  [fontname="Helvetica", fontsize=11];
+  edge  [fontname="Helvetica", fontsize=9, color="#1F3864"];
+  P [label="0\nAI-Based Pension\nComplaints Analysis\nand Resolution System", shape=circle, style=filled, fillcolor="#DDF0DD", width=2.4];
+  C [label="Complainant\n(member, employer,\nbeneficiary)", shape=box, style=filled, fillcolor="#E8EEF7"];
+  O [label="Complaint Officer", shape=box, style=filled, fillcolor="#E8EEF7"];
+  S [label="Supervisor", shape=box, style=filled, fillcolor="#E8EEF7"];
+  A [label="Administrator", shape=box, style=filled, fillcolor="#E8EEF7"];
+  C -> P [label="complaint text,\nrole, institution"];
+  P -> C [label="reference number,\nstatus, outcome"];
+  P -> O [label="assigned case,\nAI labels, due date"];
+  O -> P [label="case updates,\ncorrected labels"];
+  P -> S [label="escalation alerts,\nperformance reports"];
+  S -> P [label="reassignment,\ninstructions"];
+  A -> P [label="users, routing rules,\nSLA settings"];
+  P -> A [label="model metrics,\naudit log"];
+}

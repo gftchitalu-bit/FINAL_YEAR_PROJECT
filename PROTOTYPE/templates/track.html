@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}<h1>Track a complaint</h1>
+<div class="card"><form method="post" class="row"><div><label>Reference number</label><input name="ref" value="{{ ref }}" placeholder="PC-2026-00001"></div><div style="align-self:end"><button>Track</button></div></form></div>
+{% if c %}<div class="card"><h2>{{ c.reference_no }} <span class="badge st-{{ c.status }}">{{ c.status }}</span></h2>
+<p>Received: {{ c.created_at|dt }} &nbsp;|&nbsp; Expected resolution by: {{ c.due_at|dt }}{% if c.resolved_at %} &nbsp;|&nbsp; Resolved: {{ c.resolved_at|dt }}{% endif %}</p>
+<h2>Progress</h2><ul class="timeline">{% for h in hist %}<li><b>{{ h.new_status }}</b> <span class="muted">{{ h.created_at|dt }}</span></li>{% endfor %}</ul></div>{% endif %}{% endblock %}

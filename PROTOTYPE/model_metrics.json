@@ -1,0 +1,209 @@
+{
+ "meta": {
+  "trained_at": "2026-11-18 23:15",
+  "n_rows": 2401,
+  "n_corrections": 1,
+  "version": "lr-202611182315"
+ },
+ "metrics": {
+  "category": {
+   "accuracy": 0.9854,
+   "macro_precision": 0.9857,
+   "macro_recall": 0.9855,
+   "macro_f1": 0.9855,
+   "per_class": {
+    "delayed_claim": 0.989,
+    "employer_arrears": 0.989,
+    "life_certificate": 0.989,
+    "missing_contributions": 0.966,
+    "payment_issue": 1.0,
+    "portal_access": 0.989,
+    "registration": 0.989,
+    "rejected_claim": 0.989,
+    "service_conduct": 0.955,
+    "statement_discrepancy": 0.989,
+    "survivor_funeral": 1.0
+   },
+   "labels": [
+    "delayed_claim",
+    "employer_arrears",
+    "life_certificate",
+    "missing_contributions",
+    "payment_issue",
+    "portal_access",
+    "registration",
+    "rejected_claim",
+    "service_conduct",
+    "statement_discrepancy",
+    "survivor_funeral"
+   ],
+   "confusion": [
+    [
+     43,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     44,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     43,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0,
+     43,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     43,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     44,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     43,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     43,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     42,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     43,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     43
+    ]
+   ]
+  },
+  "urgency": {
+   "accuracy": 0.9854,
+   "macro_precision": 0.9863,
+   "macro_recall": 0.9828,
+   "macro_f1": 0.9844,
+   "per_class": {
+    "high": 0.977,
+    "low": 0.985,
+    "medium": 0.991
+   }
+  },
+  "sentiment": {
+   "accuracy": 0.9647,
+   "macro_precision": 0.9394,
+   "macro_recall": 0.9384,
+   "macro_f1": 0.9389,
+   "per_class": {
+    "negative": 0.98,
+    "neutral": 0.964,
+    "positive": 0.872
+   }
+  }
+ }
+}
