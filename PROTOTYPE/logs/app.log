@@ -507,3 +507,68 @@
 2026-11-23 19:28:16,844 INFO 127.0.0.1 user=officer32 GET / -> 200
 2026-11-23 19:28:16,845 INFO 127.0.0.1 - - [23/Nov/2026 19:28:16] "GET / HTTP/1.1" 200 -
 2026-11-23 19:28:16,915 INFO 127.0.0.1 - - [23/Nov/2026 19:28:16] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 19:46:13,426 INFO Application started
+2026-11-23 19:46:13,439 INFO WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+2026-11-23 19:46:13,439 INFO Press CTRL+C to quit
+2026-11-23 19:48:10,689 INFO 127.0.0.1 user=officer32 GET / -> 200
+2026-11-23 19:48:10,691 INFO 127.0.0.1 - - [23/Nov/2026 19:48:10] "GET / HTTP/1.1" 200 -
+2026-11-23 19:48:10,827 INFO 127.0.0.1 - - [23/Nov/2026 19:48:10] "GET /static/style.css HTTP/1.1" 200 -
+2026-11-23 19:51:01,668 INFO 127.0.0.1 user=officer32 GET / -> 200
+2026-11-23 19:51:01,669 INFO 127.0.0.1 - - [23/Nov/2026 19:51:01] "GET / HTTP/1.1" 200 -
+2026-11-23 19:51:01,735 INFO 127.0.0.1 - - [23/Nov/2026 19:51:01] "GET /static/style.css HTTP/1.1" 200 -
+2026-11-23 19:51:50,722 INFO 127.0.0.1 user=officer32 GET / -> 200
+2026-11-23 19:51:50,723 INFO 127.0.0.1 - - [23/Nov/2026 19:51:50] "GET / HTTP/1.1" 200 -
+2026-11-23 19:51:50,766 INFO 127.0.0.1 - - [23/Nov/2026 19:51:50] "GET /static/style.css HTTP/1.1" 200 -
+2026-11-23 19:54:14,606 INFO 127.0.0.1 user=officer32 GET / -> 200
+2026-11-23 19:54:14,607 INFO 127.0.0.1 - - [23/Nov/2026 19:54:14] "GET / HTTP/1.1" 200 -
+2026-11-23 19:54:14,655 INFO 127.0.0.1 - - [23/Nov/2026 19:54:14] "GET /static/style.css HTTP/1.1" 200 -
+2026-11-23 19:54:47,506 INFO 127.0.0.1 user=officer32 GET / -> 200
+2026-11-23 19:54:47,506 INFO 127.0.0.1 - - [23/Nov/2026 19:54:47] "GET / HTTP/1.1" 200 -
+2026-11-23 19:54:47,552 INFO 127.0.0.1 - - [23/Nov/2026 19:54:47] "GET /static/style.css HTTP/1.1" 200 -
+2026-11-23 20:03:20,544 INFO 127.0.0.1 user=officer32 GET / -> 200
+2026-11-23 20:03:20,545 INFO 127.0.0.1 - - [23/Nov/2026 20:03:20] "GET / HTTP/1.1" 200 -
+2026-11-23 20:03:20,599 INFO 127.0.0.1 - - [23/Nov/2026 20:03:20] "GET /static/style.css HTTP/1.1" 200 -
+2026-11-23 20:07:11,907 INFO 127.0.0.1 user=officer32 GET / -> 200
+2026-11-23 20:07:11,908 INFO 127.0.0.1 - - [23/Nov/2026 20:07:11] "GET / HTTP/1.1" 200 -
+2026-11-23 20:07:11,951 INFO 127.0.0.1 - - [23/Nov/2026 20:07:11] "GET /static/style.css HTTP/1.1" 200 -
+2026-11-23 20:08:08,716 INFO 127.0.0.1 - - [23/Nov/2026 20:08:08] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 20:08:08,797 INFO 127.0.0.1 user=officer32 GET /.well-known/appspecific/com.chrome.devtools.json -> 404
+2026-11-23 20:08:08,798 INFO 127.0.0.1 - - [23/Nov/2026 20:08:08] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+2026-11-23 20:11:45,638 INFO 127.0.0.1 user=- GET /logout -> 302
+2026-11-23 20:11:45,640 INFO 127.0.0.1 - - [23/Nov/2026 20:11:45] "GET /logout HTTP/1.1" 302 -
+2026-11-23 20:11:45,656 INFO 127.0.0.1 user=- GET / -> 200
+2026-11-23 20:11:45,657 INFO 127.0.0.1 - - [23/Nov/2026 20:11:45] "GET / HTTP/1.1" 200 -
+2026-11-23 20:11:45,743 INFO 127.0.0.1 user=- GET /.well-known/appspecific/com.chrome.devtools.json -> 404
+2026-11-23 20:11:45,743 INFO 127.0.0.1 - - [23/Nov/2026 20:11:45] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+2026-11-23 20:11:45,754 INFO 127.0.0.1 - - [23/Nov/2026 20:11:45] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 20:11:54,580 INFO 127.0.0.1 user=- GET /login -> 200
+2026-11-23 20:11:54,581 INFO 127.0.0.1 - - [23/Nov/2026 20:11:54] "GET /login HTTP/1.1" 200 -
+2026-11-23 20:11:54,649 INFO 127.0.0.1 - - [23/Nov/2026 20:11:54] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 20:11:54,651 INFO 127.0.0.1 user=- GET /.well-known/appspecific/com.chrome.devtools.json -> 404
+2026-11-23 20:11:54,652 INFO 127.0.0.1 - - [23/Nov/2026 20:11:54] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+2026-11-23 20:12:09,544 INFO 127.0.0.1 user=officer41 POST /login -> 302
+2026-11-23 20:12:09,546 INFO 127.0.0.1 - - [23/Nov/2026 20:12:09] "POST /login HTTP/1.1" 302 -
+2026-11-23 20:12:09,573 INFO 127.0.0.1 user=officer41 GET /dashboard -> 200
+2026-11-23 20:12:09,573 INFO 127.0.0.1 - - [23/Nov/2026 20:12:09] "GET /dashboard HTTP/1.1" 200 -
+2026-11-23 20:12:09,650 INFO 127.0.0.1 - - [23/Nov/2026 20:12:09] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 20:12:09,652 INFO 127.0.0.1 user=officer41 GET /.well-known/appspecific/com.chrome.devtools.json -> 404
+2026-11-23 20:12:09,652 INFO 127.0.0.1 - - [23/Nov/2026 20:12:09] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+2026-11-23 20:12:22,407 INFO 127.0.0.1 user=officer41 GET /dashboard -> 200
+2026-11-23 20:12:22,408 INFO 127.0.0.1 - - [23/Nov/2026 20:12:22] "GET /dashboard HTTP/1.1" 200 -
+2026-11-23 20:12:22,483 INFO 127.0.0.1 user=officer41 GET /.well-known/appspecific/com.chrome.devtools.json -> 404
+2026-11-23 20:12:22,486 INFO 127.0.0.1 - - [23/Nov/2026 20:12:22] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+2026-11-23 20:12:22,489 INFO 127.0.0.1 - - [23/Nov/2026 20:12:22] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 20:12:38,521 INFO 127.0.0.1 user=- GET /logout -> 302
+2026-11-23 20:12:38,523 INFO 127.0.0.1 - - [23/Nov/2026 20:12:38] "GET /logout HTTP/1.1" 302 -
+2026-11-23 20:12:38,545 INFO 127.0.0.1 user=- GET / -> 200
+2026-11-23 20:12:38,546 INFO 127.0.0.1 - - [23/Nov/2026 20:12:38] "GET / HTTP/1.1" 200 -
+2026-11-23 20:12:38,626 INFO 127.0.0.1 - - [23/Nov/2026 20:12:38] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 20:12:38,628 INFO 127.0.0.1 user=- GET /.well-known/appspecific/com.chrome.devtools.json -> 404
+2026-11-23 20:12:38,630 INFO 127.0.0.1 - - [23/Nov/2026 20:12:38] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+2026-11-23 20:26:05,341 INFO 127.0.0.1 user=- GET /login -> 200
+2026-11-23 20:26:05,341 INFO 127.0.0.1 - - [23/Nov/2026 20:26:05] "GET /login HTTP/1.1" 200 -
+2026-11-23 20:26:05,391 INFO 127.0.0.1 - - [23/Nov/2026 20:26:05] "GET /static/style.css HTTP/1.1" 304 -
+2026-11-23 20:26:07,767 INFO 127.0.0.1 user=- GET /member/login -> 200
+2026-11-23 20:26:07,768 INFO 127.0.0.1 - - [23/Nov/2026 20:26:07] "GET /member/login HTTP/1.1" 200 -
+2026-11-23 20:26:07,812 INFO 127.0.0.1 - - [23/Nov/2026 20:26:07] "GET /static/style.css HTTP/1.1" 304 -
