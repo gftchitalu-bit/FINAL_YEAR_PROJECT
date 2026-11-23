@@ -107,8 +107,16 @@ def verify_audit(con):
     return True, n, None, prev
 
 def ensure_schema():
-    """Adds the audit table to an existing database without touching your data."""
-    con = sqlite3.connect(DB_PATH); con.executescript(AUDIT_SQL); con.commit(); con.close()
+    """Adds newer tables and accounts to an existing database without touching existing data."""
+    con = sqlite3.connect(DB_PATH)
+    con.executescript(AUDIT_SQL)
+    existing = con.execute("SELECT 1 FROM officers WHERE username='member1'").fetchone()
+    if not existing:
+        con.execute(
+            'INSERT INTO officers(department_id,username,full_name,role,password_hash) VALUES (NULL,?,?,?,?)',
+            ('member1', 'Demo Member', 'member', generate_password_hash('demo123'))
+        )
+    con.commit(); con.close()
 
 def init_db():
     con = sqlite3.connect(DB_PATH); con.executescript(SCHEMA)
@@ -121,6 +129,7 @@ def init_db():
         for k in (1, 2): con.execute('INSERT INTO officers(department_id,username,full_name,role,password_hash) VALUES (?,?,?,?,?)', (i, f'officer{i}{k}', f'Officer {i}{k} ({dep})', 'officer', pw))
     con.execute('INSERT INTO officers(department_id,username,full_name,role,password_hash) VALUES (NULL,?,?,?,?)', ('supervisor', 'Demo Supervisor', 'supervisor', pw))
     con.execute('INSERT INTO officers(department_id,username,full_name,role,password_hash) VALUES (NULL,?,?,?,?)', ('admin', 'Demo Administrator', 'admin', pw))
+    con.execute('INSERT INTO officers(department_id,username,full_name,role,password_hash) VALUES (NULL,?,?,?,?)', ('member1', 'Demo Member', 'member', pw))
     con.commit(); con.close()
 
 # ---------- core logic: classify -> route -> assign -> SLA (Algorithm 3.1 in the proposal) ----------
@@ -198,6 +207,9 @@ def staff(*roles):
         @wraps(f)
         def w(*a, **k):
             if 'uid' not in session: return redirect(url_for('login', next=request.path))
+            if session['role'] not in ('officer', 'supervisor', 'admin'):
+                flash('This area is only available to authorised staff.', 'error')
+                return redirect(url_for('submit'))
             if roles and session['role'] not in roles:
                 audit(db(), 'access_denied', 'page', request.path, f'Role {session["role"]} tried to open a page restricted to {"/".join(roles)}'); abort(403)
             return f(*a, **k)
@@ -223,6 +235,9 @@ def dt(v): return v[:16] if v else '-'
 @app.route('/', methods=['GET', 'POST'])
 def submit():
     if request.method == 'POST':
+        if 'uid' not in session:
+            flash('Please log in before submitting a complaint.', 'error')
+            return redirect(url_for('member_login', next=request.full_path.rstrip('?')))
         text = request.form.get('text', '').strip()
         if len(text) < 15:
             flash('Please describe the problem in a little more detail (at least 15 characters).', 'error'); return render_template('submit.html', form=request.form)
@@ -253,12 +268,28 @@ def login():
         if u and check_password_hash(u['password_hash'], request.form.get('password', '')):
             session.update(uid=u['officer_id'], name=u['full_name'], role=u['role'], dept=u['department_id'], username=u['username'])
             audit(db(), 'login', 'officer', u['officer_id'], 'Signed in', actor=(u['officer_id'], u['username'], u['role']))
+            if u['role'] == 'member':
+                return redirect(url_for('submit'))
             return redirect(request.args.get('next') or url_for('dashboard'))
         tried = request.form.get('username', '').strip()[:40]
         audit(db(), 'login_failed', 'officer', '', f'Failed sign-in for username "{tried}"', actor=(None, tried or '(blank)', 'unknown'))
         app.logger.warning('Failed login for "%s" from %s', tried, request.remote_addr)
         flash('Wrong username or password.', 'error')
     return render_template('login.html')
+
+@app.route('/member/login', methods=['GET', 'POST'])
+def member_login():
+    if request.method == 'POST':
+        u = q('SELECT * FROM officers WHERE username=? AND role=?',
+              (request.form.get('username', '').strip(), 'member'), one=True)
+        if u and check_password_hash(u['password_hash'], request.form.get('password', '')):
+            session.update(uid=u['officer_id'], name=u['full_name'], role=u['role'], dept=u['department_id'], username=u['username'])
+            audit(db(), 'member_login', 'member', u['officer_id'], 'Member signed in', actor=(u['officer_id'], u['username'], u['role']))
+            return redirect(url_for('submit'))
+        tried = request.form.get('username', '').strip()[:40]
+        audit(db(), 'login_failed', 'member', '', f'Failed member sign-in for username "{tried}"', actor=(None, tried or '(blank)', 'unknown'))
+        flash('Wrong member username or password.', 'error')
+    return render_template('member_login.html')
 
 @app.route('/logout')
 def logout():

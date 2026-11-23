@@ -9,19 +9,27 @@
     <body>
         <header>
             <span class="brand">AI-Based Pension Complaints System</span>
+            {% if not session.uid %}
+            <a class="staff-login-icon" href="{{ url_for('login') }}" aria-label="Staff login" title="Staff login">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm-9 9a9 9 0 0 1 18 0h-3a6 6 0 0 0-12 0H3Z"/></svg>
+            </a>
+            {% endif %}
             <div class="nav">
                 <a href="{{ url_for('submit') }}">Submit complaint</a>
                 <a href="{{ url_for('track') }}">Track complaint</a>
                 {% if session.uid %}
+                {% if session.role in ('officer','supervisor','admin') %}
                 <a href="{{ url_for('dashboard') }}">Dashboard ({{ notif_count }} alerts)</a>
+                {% endif %}
                 {% if session.role in ('supervisor','admin') %}
                 <a href="{{ url_for('reports') }}">Reports</a>
                 <a href="{{ url_for('model') }}">AI model</a>
                 {% endif %}
                 {% if session.role == 'admin' %}
                 <a href="{{ url_for('audit_page') }}">Audit log</a>{% endif %}
-                <a href="{{ url_for('logout') }}">Log out ({{ session.name }})</a>
-                {% else %}<a href="{{ url_for('login') }}">Staff login</a>{% endif %}
+                {% else %}
+                <a href="{{ url_for('member_login') }}">Member login</a>
+                {% endif %}
             </div>
         </header>
         <main>
@@ -30,5 +38,11 @@
             {% endfor %}{% endwith %}
             {% block content %}{% endblock %}
         </main>
+        {% if session.uid %}
+        <footer class="app-footer">
+            <span class="signed-in-user">{{ session.name }}</span>
+            <a class="logout-button" href="{{ url_for('logout') }}" aria-label="Log out">Log out</a>
+        </footer>
+        {% endif %}
     </body>
     </html>

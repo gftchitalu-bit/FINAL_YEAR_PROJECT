@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block content %}
+<div class="login-page">
+    <h1>Member login</h1>
+    <div class="card login-card">
+        <form method="post">
+            <label>Member username</label>
+            <input name="username" autofocus>
+            <label>Password</label>
+            <input type="password" name="password">
+            <br><br>
+            <button>Log in</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
