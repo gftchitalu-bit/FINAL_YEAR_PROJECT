@@ -1,6 +1,5 @@
 {% extends 'base.html' %}{% block title %}Audit log{% endblock %}{% block content %}<h1>Audit log</h1>
-{% if chain.ok %}<div class="flash ok"><b>Integrity check passed.</b> {{ chain.n }} entries, none edited or removed. Latest chain code: <span class="mono">{{ chain.head[:20] }}</span>. Note this code and the entry count; if the log is ever edited, truncated or has rows deleted, this check will fail or the count will drop.</div>
-{% else %}<div class="flash error"><b>Integrity check FAILED</b> at entry #{{ chain.bad }}. A row was edited or deleted after it was written. Treat the log from that point as unreliable.</div>{% endif %}
+{% if not chain.ok %}<div class="flash error"><b>Integrity check FAILED</b> at entry #{{ chain.bad }}. A row was edited or deleted after it was written. Treat the log from that point as unreliable.</div>{% endif %}
 <div class="card"><form method="get" class="row"><div><label>Action</label><select name="action"><option value="">All actions</option>{% for a in actions %}<option {{ 'selected' if f.action==a }}>{{ a }}</option>{% endfor %}</select></div>
 <div><label>Person</label><input name="actor" value="{{ f.actor }}" placeholder="username, system or public"></div>
 <div style="align-self:end"><button>Filter</button> <a class="btn alt" href="{{ url_for('audit_export') }}">Export CSV</a></div></form>
