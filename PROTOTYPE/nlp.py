@@ -1,6 +1,6 @@
 """NLP engine: masks personal identifiers, then classifies a complaint by
 category (subject), urgency and sentiment using TF-IDF + logistic regression."""
-import csv, json, re
+import csv, json, re, shutil
 from datetime import datetime
 from pathlib import Path
 import joblib
@@ -17,7 +17,16 @@ NRC = re.compile(r'\b\d{6}/\d{2}/\d\b')
 PHONE = re.compile(r'(?:\+?260|\b0)\d{9}\b')
 LONGNUM = re.compile(r'\b\d{7,}\b')
 HIGH_WORDS = ['no income', 'stopped', 'funeral', 'died', 'passed away', 'widow', 'bereaved', 'sick', 'cannot afford', 'bedridden', 'asked me for money', 'must pay']
+ARCHIVE_DIR = BASE / 'model_archive'
 _cache = {}
+
+def _archive():
+    """Before retraining, keep a copy of the current model and its scores in model_archive/."""
+    if MODEL_PATH.exists():
+        try: v = json.loads(METRICS_PATH.read_text())['meta']['version']
+        except Exception: v = 'unknown-' + datetime.now().strftime('%Y%m%d%H%M%S')
+        ARCHIVE_DIR.mkdir(exist_ok=True); shutil.copy2(MODEL_PATH, ARCHIVE_DIR / f'{v}.joblib')
+        if METRICS_PATH.exists(): shutil.copy2(METRICS_PATH, ARCHIVE_DIR / f'{v}_metrics.json')
 
 def mask(text):
     """Privacy step: replace NRC numbers, phone numbers and long numbers."""
@@ -32,6 +41,7 @@ def _pipe():
 
 def train(extra=None):
     """Train on dataset.csv (+ officer corrections). Evaluates on a held-out 20% test set, then refits on all data."""
+    _archive()
     rows = list(csv.DictReader(open(DATA_PATH, encoding='utf-8')))
     for t, c, u, s in (extra or []): rows.append({'text': t, 'category': c, 'urgency': u, 'sentiment': s})
     X = [clean(r['text']) for r in rows]
@@ -48,7 +58,7 @@ def train(extra=None):
             labels = sorted(set(y)); metrics[tgt]['labels'] = labels
             metrics[tgt]['confusion'] = confusion_matrix(yte, pred, labels=labels).tolist()
         models[tgt] = _pipe().fit(X, y)
-    meta = {'trained_at': datetime.now().strftime('%Y-%m-%d %H:%M'), 'n_rows': len(rows), 'n_corrections': len(extra or []), 'version': 'lr-' + datetime.now().strftime('%Y%m%d%H%M')}
+    meta = {'trained_at': datetime.now().strftime('%Y-%m-%d %H:%M'), 'n_rows': len(rows), 'n_corrections': len(extra or []), 'version': 'lr-' + datetime.now().strftime('%Y%m%d%H%M%S')}
     joblib.dump({'models': models, 'meta': meta}, MODEL_PATH)
     METRICS_PATH.write_text(json.dumps({'meta': meta, 'metrics': metrics}, indent=1))
     _cache.clear()

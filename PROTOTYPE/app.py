@@ -1,17 +1,26 @@
 """AI-Based Pension Complaints Analysis and Resolution System (prototype).
 Run:  python app.py      then open  http://127.0.0.1:5000
 """
-import csv, os, random, sqlite3
-from datetime import datetime, timedelta
+import csv, hashlib, io, logging, os, random, sqlite3, threading
+from datetime import datetime, timedelta, timezone
+from logging.handlers import RotatingFileHandler
 from functools import wraps
 from pathlib import Path
-from flask import Flask, flash, g, redirect, render_template, request, session, url_for, abort
+from flask import Flask, Response, flash, g, has_request_context, redirect, render_template, request, session, url_for, abort
 from werkzeug.security import check_password_hash, generate_password_hash
 import nlp
 
 BASE = Path(__file__).parent
 DB_PATH = BASE / 'complaints.db'
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True      # edits to HTML templates show without restarting
+
+# ---- Application log file (rotating): logs/app.log ----
+LOG_DIR = BASE / 'logs'; LOG_DIR.mkdir(exist_ok=True)
+_fh = RotatingFileHandler(LOG_DIR / 'app.log', maxBytes=1_000_000, backupCount=5, encoding='utf-8')
+_fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+app.logger.addHandler(_fh); app.logger.setLevel(logging.INFO)
+logging.getLogger('werkzeug').addHandler(_fh)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-only-change-me')
 
 CATEGORIES = {'registration': 'Registration and onboarding', 'missing_contributions': 'Missing or unremitted contributions', 'employer_arrears': 'Employer arrears and penalties',
@@ -57,6 +66,49 @@ def close_db(_):
 def q(sql, args=(), one=False):
     cur = db().execute(sql, args); rows = cur.fetchall()
     return (rows[0] if rows else None) if one else rows
+
+# ---------- audit trail: who did what, when (tamper-evident hash chain) ----------
+AUDIT_SQL = """CREATE TABLE IF NOT EXISTS audit_log (audit_id INTEGER PRIMARY KEY, created_at TEXT, actor_id INTEGER, actor_name TEXT, actor_role TEXT,
+  action TEXT, target_type TEXT, target_id TEXT, detail TEXT, ip TEXT, prev_hash TEXT, entry_hash TEXT);
+CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_log(action);"""
+GENESIS = '0' * 64
+_audit_lock = threading.Lock()
+
+def _row_hash(prev, created, aid, name, role, action, ttype, tid, detail, ip):
+    parts = [prev, created, '' if aid is None else str(aid), name or '', role or '', action, ttype or '', str(tid or ''), detail or '', ip or '']
+    return hashlib.sha256('|'.join(parts).encode('utf-8')).hexdigest()
+
+def current_actor():
+    if has_request_context() and 'uid' in session:
+        return session['uid'], session.get('username') or session.get('name', ''), session['role']
+    return None, 'system', 'system'
+
+def audit(con, action, target_type='', target_id='', detail='', actor=None):
+    """Append one entry to the audit log. Each entry's hash includes the previous entry's hash, so editing or deleting a row is detectable."""
+    aid, name, role = actor if actor else current_actor()
+    ip = request.remote_addr if has_request_context() else ''
+    created = datetime.now(timezone.utc).strftime(FMT); detail = (detail or '')[:500]; tid = str(target_id or '')
+    with _audit_lock:
+        last = con.execute('SELECT entry_hash FROM audit_log ORDER BY audit_id DESC LIMIT 1').fetchone()
+        prev = last[0] if last else GENESIS
+        h = _row_hash(prev, created, aid, name, role, action, target_type, tid, detail, ip)
+        con.execute('INSERT INTO audit_log(created_at,actor_id,actor_name,actor_role,action,target_type,target_id,detail,ip,prev_hash,entry_hash) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                    (created, aid, name, role, action, target_type, tid, detail, ip, prev, h))
+        con.commit()
+
+def verify_audit(con):
+    """Recompute the whole chain. Returns (ok, entries, first_bad_id, head_hash)."""
+    prev, n = GENESIS, 0
+    for r in con.execute('SELECT * FROM audit_log ORDER BY audit_id').fetchall():
+        n += 1
+        good = r['prev_hash'] == prev and r['entry_hash'] == _row_hash(prev, r['created_at'], r['actor_id'], r['actor_name'], r['actor_role'], r['action'], r['target_type'], r['target_id'], r['detail'], r['ip'])
+        if not good: return False, n, r['audit_id'], prev
+        prev = r['entry_hash']
+    return True, n, None, prev
+
+def ensure_schema():
+    """Adds the audit table to an existing database without touching your data."""
+    con = sqlite3.connect(DB_PATH); con.executescript(AUDIT_SQL); con.commit(); con.close()
 
 def init_db():
     con = sqlite3.connect(DB_PATH); con.executescript(SCHEMA)
@@ -110,6 +162,7 @@ def run_escalations(con):
         con.execute('INSERT INTO escalations(complaint_id,reason,created_at) VALUES (?,?,?)', (c['complaint_id'], 'Due date passed without resolution', now().strftime(FMT)))
         con.execute('INSERT INTO case_updates(complaint_id,officer_id,note,new_status,created_at) VALUES (?,?,?,?,?)', (c['complaint_id'], None, 'Escalated automatically: due date passed.', 'Escalated', now().strftime(FMT)))
         for s in con.execute("SELECT officer_id FROM officers WHERE role='supervisor'").fetchall(): notify(con, s['officer_id'], c['complaint_id'], f'Escalation: case {c["reference_no"]} is overdue')
+        audit(con, 'case_escalated', 'complaint', c['complaint_id'], f'{c["reference_no"]}: due date passed without resolution', actor=(None, 'system', 'system'))
         n += 1
     con.commit(); return n
 
@@ -130,8 +183,14 @@ def seed_demo(con, n=70):
 
 def bootstrap():
     nlp.ensure_model()
-    if not DB_PATH.exists():
-        init_db(); con = sqlite3.connect(DB_PATH); con.row_factory = sqlite3.Row; seed_demo(con); con.close()
+    fresh = not DB_PATH.exists()
+    if fresh: init_db()
+    ensure_schema()
+    con = sqlite3.connect(DB_PATH); con.row_factory = sqlite3.Row
+    if fresh:
+        seed_demo(con); audit(con, 'demo_seed', 'system', '', 'Loaded simulated demo complaints', actor=(None, 'system', 'system'))
+    audit(con, 'app_start', 'system', '', 'Application started; model ' + nlp.load()['meta']['version'], actor=(None, 'system', 'system'))
+    con.close(); app.logger.info('Application started')
 
 # ---------- auth ----------
 def staff(*roles):
@@ -139,7 +198,8 @@ def staff(*roles):
         @wraps(f)
         def w(*a, **k):
             if 'uid' not in session: return redirect(url_for('login', next=request.path))
-            if roles and session['role'] not in roles: abort(403)
+            if roles and session['role'] not in roles:
+                audit(db(), 'access_denied', 'page', request.path, f'Role {session["role"]} tried to open a page restricted to {"/".join(roles)}'); abort(403)
             return f(*a, **k)
         return w
     return deco
@@ -149,6 +209,12 @@ def inject():
     unread = 0
     if 'uid' in session: unread = q('SELECT COUNT(*) n FROM notifications WHERE officer_id=?', (session['uid'],), one=True)['n']
     return dict(session=session, CATEGORIES=CATEGORIES, STATUSES=STATUSES, notif_count=unread, now=now())
+
+@app.after_request
+def log_request(resp):
+    if not request.path.startswith('/static'):
+        app.logger.info('%s user=%s %s %s -> %s', request.remote_addr, session.get('username', '-'), request.method, request.path, resp.status_code)
+    return resp
 
 @app.template_filter('dt')
 def dt(v): return v[:16] if v else '-'
@@ -161,6 +227,8 @@ def submit():
         if len(text) < 15:
             flash('Please describe the problem in a little more detail (at least 15 characters).', 'error'); return render_template('submit.html', form=request.form)
         con = db(); pk, ref = create_complaint(con, text, request.form.get('role', 'employee'), request.form.get('institution', 'NAPSA'), request.form.get('name'), request.form.get('contact')); con.commit()
+        p = con.execute('SELECT category,urgency,sentiment,confidence,model_version FROM predictions WHERE complaint_id=?', (pk,)).fetchone()
+        audit(con, 'complaint_created', 'complaint', pk, f'{ref} via web form ({request.form.get("role", "employee")}, {request.form.get("institution", "NAPSA")}); AI: {p["category"]}/{p["urgency"]}/{p["sentiment"]} (confidence {p["confidence"]}); model {p["model_version"]}', actor=(None, 'public', 'public'))
         return redirect(url_for('submitted', ref=ref))
     return render_template('submit.html', form={})
 
@@ -173,6 +241,7 @@ def track():
     ref = (request.form.get('ref') or request.args.get('ref') or '').strip().upper()
     c = q('SELECT * FROM complaints WHERE reference_no=?', (ref,), one=True) if ref else None
     if ref and not c: flash('No complaint found with that reference number.', 'error')
+    if ref: audit(db(), 'track_lookup' if c else 'track_not_found', 'complaint', c['complaint_id'] if c else '', f'Reference {ref[:30]}', actor=(None, 'public', 'public'))
     hist = q("SELECT new_status, created_at FROM case_updates WHERE complaint_id=? ORDER BY update_id", (c['complaint_id'],)) if c else []
     return render_template('track.html', c=c, hist=hist, ref=ref)
 
@@ -182,13 +251,18 @@ def login():
     if request.method == 'POST':
         u = q('SELECT * FROM officers WHERE username=?', (request.form.get('username', '').strip(),), one=True)
         if u and check_password_hash(u['password_hash'], request.form.get('password', '')):
-            session.update(uid=u['officer_id'], name=u['full_name'], role=u['role'], dept=u['department_id'])
+            session.update(uid=u['officer_id'], name=u['full_name'], role=u['role'], dept=u['department_id'], username=u['username'])
+            audit(db(), 'login', 'officer', u['officer_id'], 'Signed in', actor=(u['officer_id'], u['username'], u['role']))
             return redirect(request.args.get('next') or url_for('dashboard'))
+        tried = request.form.get('username', '').strip()[:40]
+        audit(db(), 'login_failed', 'officer', '', f'Failed sign-in for username "{tried}"', actor=(None, tried or '(blank)', 'unknown'))
+        app.logger.warning('Failed login for "%s" from %s', tried, request.remote_addr)
         flash('Wrong username or password.', 'error')
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
+    if 'uid' in session: audit(db(), 'logout', 'officer', session['uid'], 'Signed out')
     session.clear(); return redirect(url_for('submit'))
 
 @app.route('/dashboard')
@@ -217,23 +291,36 @@ def case(cid):
         d.name dept, o.full_name officer, cm.role crole, cm.full_name cname, i.code inst FROM complaints c JOIN predictions p ON p.complaint_id=c.complaint_id JOIN departments d ON d.department_id=c.department_id
         LEFT JOIN officers o ON o.officer_id=c.officer_id JOIN complainants cm ON cm.complainant_id=c.complainant_id JOIN institutions i ON i.institution_id=cm.institution_id WHERE c.complaint_id=?""", (cid,), one=True)
     if not c: abort(404)
+    if request.method == 'GET':   # record who opened the case (not more than once per 5 minutes per person)
+        who = current_actor()[1]; since = (datetime.now(timezone.utc) - timedelta(minutes=5)).strftime(FMT)
+        if not con.execute("SELECT 1 FROM audit_log WHERE action='case_view' AND target_id=? AND actor_name=? AND created_at>?", (str(cid), who, since)).fetchone():
+            audit(con, 'case_view', 'complaint', cid, f'Opened case {c["reference_no"]}')
     if request.method == 'POST':
         f = request.form; status = f.get('status', c['status']); note = f.get('note', '').strip()
         cat, urg, sen = f.get('category', c['category']), f.get('urgency', c['urgency']), f.get('sentiment', c['sentiment'])
         cur = (c['corrected_category'] or c['category'], c['corrected_urgency'] or c['urgency'], c['corrected_sentiment'] or c['sentiment'])
+        changes = []; had_note = bool(note)
         if (cat, urg, sen) != cur:   # officer corrected the AI: keep it for retraining
             con.execute('UPDATE predictions SET corrected_category=?, corrected_urgency=?, corrected_sentiment=? WHERE complaint_id=?', (cat, urg, sen, cid))
             note = (note + ' ' if note else '') + f'[Labels corrected to {cat}/{urg}/{sen}]'
+            changes.append(f'labels {cur[0]}/{cur[1]}/{cur[2]} -> {cat}/{urg}/{sen}')
             if urg != cur[1]:
-                due = datetime.strptime(c['created_at'], FMT) + timedelta(hours=SLA_HOURS[urg]); con.execute('UPDATE complaints SET due_at=? WHERE complaint_id=?', (due.strftime(FMT), cid))
+                due = datetime.strptime(c['created_at'], FMT) + timedelta(hours=SLA_HOURS[urg]); con.execute('UPDATE complaints SET due_at=? WHERE complaint_id=?', (due.strftime(FMT), cid)); changes.append(f'due date {c["due_at"][:16]} -> {due.strftime(FMT)[:16]}')
             dept = con.execute('SELECT department_id FROM routing_rules WHERE category=?', (cat,)).fetchone()['department_id']
             if dept != c['department_id']:
-                con.execute('UPDATE complaints SET department_id=?, officer_id=? WHERE complaint_id=?', (dept, pick_officer(con, dept), cid)); note += ' [Re-routed to ' + DEPARTMENTS[dept - 1] + ']'
-        if session['role'] in ('supervisor', 'admin') and f.get('officer_id'):
+                con.execute('UPDATE complaints SET department_id=?, officer_id=? WHERE complaint_id=?', (dept, pick_officer(con, dept), cid)); note += ' [Re-routed to ' + DEPARTMENTS[dept - 1] + ']'; changes.append(f'department {c["dept"]} -> {DEPARTMENTS[dept - 1]}')
+        if session['role'] in ('supervisor', 'admin') and f.get('officer_id') and int(f['officer_id']) != c['officer_id']:
+            new_o = con.execute('SELECT full_name FROM officers WHERE officer_id=?', (int(f['officer_id']),)).fetchone()
             con.execute('UPDATE complaints SET officer_id=? WHERE complaint_id=?', (int(f['officer_id']), cid))
+            note = (note + ' ' if note else '') + f'[Reassigned from {c["officer"]} to {new_o["full_name"]} by {session["name"]}]'
+            changes.append(f'officer {c["officer"]} -> {new_o["full_name"]}')
+            audit(con, 'case_reassign', 'complaint', cid, f'{c["reference_no"]}: {c["officer"]} -> {new_o["full_name"]}')
         resolved = now().strftime(FMT) if status in ('Resolved', 'Closed') and not c['resolved_at'] else c['resolved_at']
         con.execute('UPDATE complaints SET status=?, resolved_at=? WHERE complaint_id=?', (status, resolved, cid))
         con.execute('INSERT INTO case_updates(complaint_id,officer_id,note,new_status,created_at) VALUES (?,?,?,?,?)', (cid, session['uid'], note or 'Status updated.', status, now().strftime(FMT)))
+        if status != c['status']: changes.append(f'status {c["status"]} -> {status}')
+        if had_note: changes.append('note added')
+        audit(con, 'case_update', 'complaint', cid, f'{c["reference_no"]}: ' + ('; '.join(changes) or 'saved with no change'))
         con.commit(); flash('Case updated.', 'ok'); return redirect(url_for('case', cid=cid))
     hist = q('SELECT u.*, o.full_name FROM case_updates u LEFT JOIN officers o ON o.officer_id=u.officer_id WHERE complaint_id=? ORDER BY update_id', (cid,))
     officers = q("SELECT officer_id, full_name FROM officers WHERE role='officer' ORDER BY department_id, officer_id")
@@ -270,14 +357,41 @@ def model():
 @app.route('/admin/escalate', methods=['POST'])
 @staff('supervisor', 'admin')
 def admin_escalate():
-    flash(f'Escalation check complete: {run_escalations(db())} case(s) escalated.', 'ok'); return redirect(request.referrer or url_for('dashboard'))
+    n = run_escalations(db()); audit(db(), 'escalation_check', 'system', '', f'Manual escalation check run; {n} case(s) escalated')
+    flash(f'Escalation check complete: {n} case(s) escalated.', 'ok'); return redirect(request.referrer or url_for('dashboard'))
 
 @app.route('/admin/retrain', methods=['POST'])
 @staff('admin')
 def admin_retrain():
     extra = [(r['text'], r['corrected_category'], r['corrected_urgency'] or r['urgency'], r['corrected_sentiment'] or r['sentiment'])
              for r in q('SELECT c.text, p.* FROM predictions p JOIN complaints c ON c.complaint_id=p.complaint_id WHERE p.corrected_category IS NOT NULL')]
-    meta, _ = nlp.train(extra); flash(f'Model retrained with {meta["n_corrections"]} officer correction(s). Version {meta["version"]}.', 'ok'); return redirect(url_for('model'))
+    old = nlp.load()['meta']['version']; meta, mt = nlp.train(extra)
+    audit(db(), 'model_retrain', 'model', meta['version'], f'{old} -> {meta["version"]}; rows {meta["n_rows"]}; officer corrections {meta["n_corrections"]}; test accuracy subject {mt["category"]["accuracy"]}, urgency {mt["urgency"]["accuracy"]}, sentiment {mt["sentiment"]["accuracy"]}; previous model archived')
+    flash(f'Model retrained with {meta["n_corrections"]} officer correction(s). Version {meta["version"]}.', 'ok'); return redirect(url_for('model'))
+
+@app.route('/audit')
+@staff('admin')
+def audit_page():
+    con = db(); f = {k: request.args.get(k, '').strip() for k in ('action', 'actor')}
+    page = max(1, int(request.args.get('page', 1) or 1)); per = 50; where, args = [], []
+    if f['action']: where.append('action=?'); args.append(f['action'])
+    if f['actor']: where.append('actor_name LIKE ?'); args.append('%' + f['actor'] + '%')
+    w = ('WHERE ' + ' AND '.join(where)) if where else ''
+    total = con.execute(f'SELECT COUNT(*) FROM audit_log {w}', args).fetchone()[0]
+    rows = con.execute(f'SELECT * FROM audit_log {w} ORDER BY audit_id DESC LIMIT ? OFFSET ?', args + [per, (page - 1) * per]).fetchall()
+    actions = [r[0] for r in con.execute('SELECT DISTINCT action FROM audit_log ORDER BY action').fetchall()]
+    ok, n, bad, head = verify_audit(con)
+    audit(con, 'audit_view', 'audit_log', '', f'Viewed the audit log (page {page})')
+    return render_template('audit.html', rows=rows, f=f, actions=actions, total=total, page=page, pages=max(1, -(-total // per)), chain=dict(ok=ok, n=n, bad=bad, head=head))
+
+@app.route('/audit/export.csv')
+@staff('admin')
+def audit_export():
+    con = db(); buf = io.StringIO(); w = csv.writer(buf)
+    w.writerow(['audit_id', 'created_at_utc', 'actor_id', 'actor_name', 'actor_role', 'action', 'target_type', 'target_id', 'detail', 'ip', 'prev_hash', 'entry_hash'])
+    for r in con.execute('SELECT * FROM audit_log ORDER BY audit_id'): w.writerow(list(r))
+    audit(con, 'audit_export', 'audit_log', '', 'Exported the audit log as CSV')
+    return Response(buf.getvalue(), mimetype='text/csv', headers={'Content-Disposition': 'attachment; filename=audit_log.csv'})
 
 bootstrap()
 if __name__ == '__main__':

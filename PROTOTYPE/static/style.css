@@ -1,4 +1,4 @@
-:root{--navy:#1F3864;--blue:#2F5597;--green:#2E8B7A;--red:#C2410C;--amber:#B45309;--bg:#F4F6FA;--card:#fff;--line:#D9DEE8;--text:#1F2937}
+/*:root{--navy:#1F3864;--blue:#2F5597;--green:#2E8B7A;--red:#C2410C;--amber:#B45309;--bg:#F4F6FA;--card:#fff;--line:#D9DEE8;--text:#1F2937}
 *{box-sizing:border-box}body{margin:0;font-family:Calibri,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
 header{background:var(--navy);color:#fff;padding:.7rem 1.5rem;display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap}
 header .brand{font-weight:700;font-size:1.05rem;margin-right:auto}header a{color:#DCE6F7;text-decoration:none;font-size:.95rem}header a:hover{color:#fff}
@@ -15,4 +15,559 @@ th{background:#EEF2F8;color:var(--navy)}tr:hover td{background:#FAFBFD}.badge{di
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin-bottom:1rem}.kpi{background:#fff;border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem}
 .kpi b{display:block;font-size:1.7rem;color:var(--navy)}.kpi.bad b{color:var(--red)}.bar{background:#E5E9F2;border-radius:4px;height:14px;margin:.15rem 0 .55rem}.bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.1rem}.muted{color:#6B7280;font-size:.88rem}.notice{background:#FDF2D9;border:1px solid #E9D49A;border-radius:6px;padding:.6rem .9rem;font-size:.9rem;margin-bottom:1rem}
-.overdue{color:var(--red);font-weight:700}.timeline li{margin:.35rem 0}.mono{font-family:Consolas,monospace}
+.overdue{color:var(--red);font-weight:700}.timeline li{margin:.35rem 0}.mono{font-family:Consolas,monospace}*/
+
+
+/* ==========================================================================
+   AI-Based Pension Complaints System - stylesheet
+   Theme: deep blue and gold, inspired by NAPSA's published blue-and-yellow identity.
+   To match the official brand exactly, replace the hex values in :root below
+   with the codes from NAPSA's brand guide. Nothing else needs to change.
+   ========================================================================== */
+
+:root {
+    --navy: #0A2A5E;
+    /* header, headings */
+    --blue: #0F4C9A;
+    /* primary buttons, links */
+    --blue-dark: #0B3B7A;
+    /* hover */
+    --blue-tint: #EAF1FB;
+    /* table heads, soft panels */
+    --gold: #F4B400;
+    /* accent line, focus ring, brand mark */
+    --gold-tint: #FFF4CC;
+    /* notices */
+    --ink: #16202E;
+    /* body text */
+    --muted: #4A5568;
+    /* secondary text */
+    --line: #D3DAE6;
+    /* borders */
+    --bg: #F2F5F9;
+    /* page background */
+    --danger: #B42318;
+    --warn: #B54708;
+    --success: #067647;
+    --neutral: #475467;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 2px 8px rgba(16, 24, 40, .06);
+}
+
+* {
+    box-sizing: border-box
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, Calibri, Arial, sans-serif;
+    line-height: 1.55
+}
+
+a {
+    color: var(--blue);
+    text-underline-offset: 3px
+}
+
+a:hover {
+    color: var(--blue-dark)
+}
+
+:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--navy)
+}
+
+
+/* ---- Header and navigation ---- */
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem .2rem;
+    padding: .7rem 1.5rem;
+    background: var(--navy);
+    border-bottom: 4px solid var(--gold);
+    box-shadow: 0 2px 6px rgba(10, 42, 94, .25)
+}
+
+header .brand {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    flex: 1 1 280px;
+    min-width: 0;
+    color: #fff;
+    font-weight: 700;
+    font-size: .98rem;
+    letter-spacing: .01em;
+    line-height: 1.25
+}
+
+header .brand::before {
+    content: "P";
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 800;
+    font-size: 1.1rem
+}
+
+header a {
+    color: #E6EEF9;
+    text-decoration: none;
+    font-size: .9rem;
+    font-weight: 500;
+    padding: .45rem .62rem;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: background .15s
+}
+
+header a:hover {
+    background: rgba(255, 255, 255, .14);
+    color: #fff
+}
+
+
+/* ---- Page layout ---- */
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 2.5rem
+}
+
+h1 {
+    margin: .1rem 0 1.4rem;
+    color: var(--navy);
+    font-size: 1.7rem;
+    line-height: 1.25;
+    letter-spacing: -.01em
+}
+
+h1::after {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 4px;
+    margin-top: .6rem;
+    border-radius: 2px;
+    background: var(--gold)
+}
+
+h2 {
+    margin: .1rem 0 .8rem;
+    color: var(--navy);
+    font-size: 1.12rem
+}
+
+p {
+    margin: .5rem 0
+}
+
+.card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.3rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow)
+}
+
+.grid2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 1.25rem;
+    align-items: start
+}
+
+.grid2>.card {
+    margin-bottom: 0
+}
+
+.grid2 .card .row {
+    grid-template-columns: 1fr
+}
+
+
+/* stack the dropdowns inside side-by-side cards */
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 1rem
+}
+
+.muted {
+    color: var(--muted);
+    font-size: .88rem
+}
+
+main>.muted:last-child {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    text-align: center
+}
+
+.mono {
+    font-family: Consolas, "Courier New", monospace
+}
+
+
+/* ---- Forms ---- */
+
+label {
+    display: block;
+    margin: .85rem 0 .3rem;
+    font-weight: 600;
+    font-size: .92rem;
+    color: var(--navy)
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: .65rem .8rem;
+    border: 1px solid #B5C0D0;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    transition: border-color .15s, box-shadow .15s
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: #8696AF
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(15, 76, 154, .25)
+}
+
+textarea {
+    min-height: 140px;
+    resize: vertical
+}
+
+button,
+.btn {
+    display: inline-block;
+    padding: .65rem 1.3rem;
+    border: 1px solid var(--blue);
+    border-radius: 8px;
+    background: var(--blue);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .15s, box-shadow .15s
+}
+
+button:hover,
+.btn:hover {
+    background: var(--blue-dark);
+    border-color: var(--blue-dark);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(15, 76, 154, .3)
+}
+
+button.alt,
+.btn.alt {
+    background: #fff;
+    color: var(--blue)
+}
+
+button.alt:hover,
+.btn.alt:hover {
+    background: var(--blue-tint);
+    color: var(--blue-dark);
+    box-shadow: none
+}
+
+
+/* ---- Tables ---- */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .92rem
+}
+
+th,
+td {
+    padding: .7rem .8rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top
+}
+
+th {
+    background: var(--blue-tint);
+    color: var(--navy);
+    font-size: .76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 2px solid #C3D3EA;
+    white-space: nowrap
+}
+
+tr:nth-child(even) td {
+    background: #F8FAFD
+}
+
+tr:hover td {
+    background: #EEF4FC
+}
+
+td a {
+    font-weight: 600
+}
+
+
+/* ---- Badges: urgency, sentiment, status ---- */
+
+.badge {
+    display: inline-block;
+    padding: .16rem .62rem;
+    border-radius: 999px;
+    background: var(--neutral);
+    color: #fff;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    text-transform: capitalize;
+    white-space: nowrap;
+    vertical-align: middle
+}
+
+.high,
+.negative,
+.st-Escalated {
+    background: var(--danger)
+}
+
+.medium,
+.st-Awaiting {
+    background: var(--warn)
+}
+
+.low,
+.positive,
+.st-Resolved,
+.st-Closed {
+    background: var(--success)
+}
+
+.neutral {
+    background: var(--neutral)
+}
+
+.st-In {
+    background: var(--blue)
+}
+
+
+/* "In Progress" (the class name splits on the space) */
+
+
+/* ---- Messages ---- */
+
+.flash {
+    margin-bottom: 1.1rem;
+    padding: .8rem 1.1rem;
+    border-left: 4px solid;
+    border-radius: 8px;
+    font-weight: 500
+}
+
+.flash.ok {
+    background: #E7F6EC;
+    color: #054F31;
+    border-color: var(--success)
+}
+
+.flash.error {
+    background: #FDECEA;
+    color: #7A1A12;
+    border-color: var(--danger)
+}
+
+.notice {
+    margin-bottom: 1.1rem;
+    padding: .8rem 1.1rem;
+    background: var(--gold-tint);
+    border: 1px solid #EBCB63;
+    border-left: 4px solid var(--gold);
+    border-radius: 8px;
+    color: #5C4200;
+    font-size: .92rem
+}
+
+.overdue {
+    color: var(--danger);
+    font-weight: 700
+}
+
+
+/* ---- Reports ---- */
+
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem
+}
+
+.kpi {
+    padding: 1rem 1.15rem;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--blue);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    color: var(--muted);
+    font-size: .85rem;
+    font-weight: 600
+}
+
+.kpi b {
+    display: block;
+    margin-bottom: .15rem;
+    color: var(--navy);
+    font-size: 2rem;
+    line-height: 1.15;
+    font-weight: 700
+}
+
+.kpi.bad {
+    border-top-color: var(--danger)
+}
+
+.kpi.bad b {
+    color: var(--danger)
+}
+
+.bar {
+    height: 10px;
+    margin: .2rem 0 .75rem;
+    border-radius: 999px;
+    background: #E4EAF3;
+    overflow: hidden
+}
+
+.bar i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--blue), #3B7DD8)
+}
+
+
+/* ---- Case history timeline ---- */
+
+.timeline {
+    margin: .3rem 0 0 .45rem;
+    padding: 0 0 0 1.2rem;
+    list-style: none;
+    border-left: 2px solid #C3D3EA
+}
+
+.timeline li {
+    position: relative;
+    margin: 0;
+    padding: .55rem 0 .55rem .4rem
+}
+
+.timeline li::before {
+    content: "";
+    position: absolute;
+    left: calc(-1.2rem - 7px);
+    top: .95rem;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 0 2px #C3D3EA
+}
+
+
+/* ---- Small screens ---- */
+
+@media (max-width:720px) {
+    header {
+        padding: .6rem .9rem;
+        position: static
+    }
+    header .brand {
+        width: 100%;
+        font-size: .95rem
+    }
+    header a {
+        padding: .4rem .6rem;
+        font-size: .88rem
+    }
+    main {
+        padding: 1.25rem .85rem 2rem
+    }
+    h1 {
+        font-size: 1.4rem
+    }
+    .card {
+        padding: 1rem 1.05rem
+    }
+    table {
+        display: block;
+        overflow-x: auto;
+        font-size: .86rem
+    }
+    .kpi b {
+        font-size: 1.6rem
+    }
+}
+
+
+/* ---- Printing ---- */
+
+@media print {
+    header,
+    button,
+    .btn,
+    form {
+        display: none!important
+    }
+    body {
+        background: #fff
+    }
+    .card,
+    .kpi {
+        box-shadow: none
+    }
+}

@@ -8,5 +8,5 @@ Urgency: <span class="badge {{ c.urgency }}">{{ c.urgency }}</span> &nbsp; Senti
 <div><label>Urgency</label><select name="urgency">{% for u in ['low','medium','high'] %}<option {{ 'selected' if (c.corrected_urgency or c.urgency)==u }}>{{ u }}</option>{% endfor %}</select></div>
 <div><label>Sentiment</label><select name="sentiment">{% for u in ['negative','neutral','positive'] %}<option {{ 'selected' if (c.corrected_sentiment or c.sentiment)==u }}>{{ u }}</option>{% endfor %}</select></div></div>
 {% if session.role in ('supervisor','admin') %}<label>Reassign to officer</label><select name="officer_id"><option value="">(no change)</option>{% for o in officers %}<option value="{{ o.officer_id }}">{{ o.full_name }}</option>{% endfor %}</select>{% endif %}
-<br><br><button>Save</button> <a class="btn alt" href="{{ url_for('dashboard') }}">Back</a></form><p class="muted">Corrections are stored and can be used to retrain the model.</p></div></div>
+<br><br><button>Save</button> <a class="btn alt" href="{{ url_for('dashboard') }}">Back</a></form></div></div>
 <div class="card"><h2>History</h2><ul class="timeline">{% for h in hist %}<li><b>{{ h.new_status }}</b> <span class="muted">{{ h.created_at|dt }} by {{ h.full_name or 'System' }}</span><br>{{ h.note }}</li>{% endfor %}</ul></div>{% endblock %}

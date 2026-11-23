@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block title %}Audit log{% endblock %}{% block content %}<h1>Audit log</h1>
+{% if chain.ok %}<div class="flash ok"><b>Integrity check passed.</b> {{ chain.n }} entries, none edited or removed. Latest chain code: <span class="mono">{{ chain.head[:20] }}</span>. Note this code and the entry count; if the log is ever edited, truncated or has rows deleted, this check will fail or the count will drop.</div>
+{% else %}<div class="flash error"><b>Integrity check FAILED</b> at entry #{{ chain.bad }}. A row was edited or deleted after it was written. Treat the log from that point as unreliable.</div>{% endif %}
+<div class="card"><form method="get" class="row"><div><label>Action</label><select name="action"><option value="">All actions</option>{% for a in actions %}<option {{ 'selected' if f.action==a }}>{{ a }}</option>{% endfor %}</select></div>
+<div><label>Person</label><input name="actor" value="{{ f.actor }}" placeholder="username, system or public"></div>
+<div style="align-self:end"><button>Filter</button> <a class="btn alt" href="{{ url_for('audit_export') }}">Export CSV</a></div></form>
+<p class="muted">Times are in UTC (Zambia is UTC+2). {{ total }} matching entries.</p></div>
+{% set danger = ['login_failed','access_denied','track_not_found','case_escalated'] %}{% set notable = ['case_reassign','model_retrain','escalation_check','audit_export'] %}
+<div class="card" style="overflow-x:auto"><table><tr><th>#</th><th>Time (UTC)</th><th>Person</th><th>Action</th><th>Target</th><th>Detail</th><th>IP</th></tr>
+{% for r in rows %}<tr><td>{{ r.audit_id }}</td><td>{{ r.created_at }}</td><td>{{ r.actor_name }}<br><span class="muted">{{ r.actor_role }}</span></td>
+<td><span class="badge {{ 'high' if r.action in danger else ('medium' if r.action in notable else '') }}">{{ r.action }}</span></td><td>{{ r.target_type }} {{ r.target_id }}</td><td>{{ r.detail }}</td><td class="mono">{{ r.ip }}</td></tr>
+{% else %}<tr><td colspan="7">No entries match.</td></tr>{% endfor %}</table></div>
+{% if pages > 1 %}<p>Page {{ page }} of {{ pages }}: {% if page > 1 %}<a href="{{ url_for('audit_page', page=page-1, action=f.action, actor=f.actor) }}">Newer</a>{% endif %}{% if page > 1 and page < pages %} | {% endif %}{% if page < pages %}<a href="{{ url_for('audit_page', page=page+1, action=f.action, actor=f.actor) }}">Older</a>{% endif %}</p>{% endif %}
+{% endblock %}
